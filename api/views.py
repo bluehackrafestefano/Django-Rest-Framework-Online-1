@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from rest_framework import request
 from .models import Article
 from .serializers import ArticleSerializer
 # from django.http import JsonResponse, HttpResponse
@@ -8,8 +9,28 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND, HTTP_204_NO_CONTENT
 
+# Imports for class based views:
+from rest_framework.views import APIView
+
+
 def home(request):
     return render(request, 'api/home.html')
+
+class ArticleAPIView(APIView):
+    
+    def get(self, request):
+        articles = Article.objects.all()
+        serializer = ArticleSerializer(articles, many=True)
+        return Response(serializer.data)
+    
+    def post(self, request):
+        serializer = ArticleSerializer(data=request.data)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=HTTP_201_CREATED)
+        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
 
 # @csrf_exempt
 @api_view(['GET', 'POST'])
@@ -31,6 +52,7 @@ def article_list(request):
             return Response(serializer.data, status=HTTP_201_CREATED)
         # return JsonResponse(serializer.errors, status=400)
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
 
 # @csrf_exempt
 @api_view(['GET', 'PUT', 'DELETE'])
