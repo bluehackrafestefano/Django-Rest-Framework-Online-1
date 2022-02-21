@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from rest_framework import request
+from rest_framework.utils import serializer_helpers
 from .models import Article
 from .serializers import ArticleSerializer
 # from django.http import JsonResponse, HttpResponse
@@ -12,7 +13,30 @@ from rest_framework.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_4
 # Imports for class based views:
 from rest_framework.views import APIView
 
+# Imports for generic views:
+from rest_framework import generics, mixins
 
+
+class GenericGetPostAPIView(generics.GenericAPIView, mixins.ListModelMixin, 
+                     mixins.CreateModelMixin):
+    
+    serializer_class = ArticleSerializer
+    queryset = Article.objects.all()
+    # lookup_field = 'id'
+    
+    def get(self, request):
+        return self.list(request)
+    
+    def post(self, request):
+        return self.create(request)
+    
+    # def put(self, request, id=None):
+    #     return self.update(request, id)
+    
+    # def delete(self, request, id):
+    #     return self.destroy(request, id)
+        
+    
 def home(request):
     return render(request, 'api/home.html')
 
